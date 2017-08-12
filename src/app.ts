@@ -1,8 +1,12 @@
 // Imports
 import * as bodyParser from 'body-parser';
 import * as express from 'express';
+import * as expressWinston from 'express-winston';
 import * as path from 'path';
 import * as yargs from 'yargs';
+
+// Imports logger
+import { logger } from './logger';
 
 import { Client, OAuth2Framework, OAuth2FrameworkRouter } from 'oauth2-framework';
 
@@ -11,10 +15,17 @@ import { validateCredentials } from './db';
 const argv = yargs.argv;
 const app = express();
 
+app.set('trust proxy', true);
+
 // Configures middleware
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use('/static', express.static(path.join(__dirname, 'public')));
+app.use(expressWinston.logger({
+    meta: true,
+    msg: 'HTTP Request: {{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}} {{req.ip}}',
+    winstonInstance: logger,
+}));
 
 const framework = new OAuth2Framework({
     findClient: (client_id: string) => {
