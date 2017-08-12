@@ -1,5 +1,6 @@
 // Imports
 import * as co from 'co';
+import * as moment from 'moment';
 import * as Sequelize from 'sequelize';
 
 let sequelize: Sequelize.Sequelize = null;
@@ -26,6 +27,16 @@ function getDatabase(): Sequelize.Sequelize {
             field: 'UserId',
             primaryKey: true,
             type: Sequelize.UUID,
+        },
+        lastLoginTimestamp: {
+            allowNull: false,
+            field: 'LastLoginTimestamp',
+            type: Sequelize.STRING,
+        },
+        locked: {
+            allowNull: false,
+            field: 'Locked',
+            type: Sequelize.BOOLEAN,
         },
         password: {
             allowNull: false,
@@ -57,12 +68,18 @@ export function validateCredentials(clientId: string, username: string, password
 
         const userCredentials = yield UserCredentials.find({
             where: {
+                locked: false,
                 password,
                 username,
             },
         });
 
         if (userCredentials) {
+
+            userCredentials.lastLoginTimestamp = moment().format('YYYY-MM-DD HH:mm:ss');
+
+            userCredentials.save();
+
             return true;
         }
 

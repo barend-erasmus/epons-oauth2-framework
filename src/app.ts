@@ -1,3 +1,5 @@
+// http://localhost:3000/authorize?response_type=code&client_id=0zyrWYATtw&redirect_uri=http://localhost:5766/User/Callback&state=15791d08-0dba-4ed4-930f-98e92952f7ed
+
 // Imports
 import * as bodyParser from 'body-parser';
 import * as express from 'express';
