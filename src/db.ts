@@ -10,7 +10,7 @@ function getDatabase(): Sequelize.Sequelize {
     if (sequelize) {
         return sequelize;
     }
-    sequelize = new Sequelize('SADFM_Live', 'sa', 'Galjoen501', {
+    sequelize = new Sequelize('SADFM_Live', 'username', 'password', {
         dialect: 'mssql',
         host: 'epons.dedicated.co.za',
         pool: {
