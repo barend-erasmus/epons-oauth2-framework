@@ -1,6 +1,6 @@
 // Imports
-import * as Sequelize from 'sequelize';
 import * as co from 'co';
+import * as Sequelize from 'sequelize';
 
 let sequelize: Sequelize.Sequelize = null;
 let UserCredentials = null;
@@ -22,32 +22,32 @@ function getDatabase(): Sequelize.Sequelize {
 
     UserCredentials = sequelize.define('UserCredentials', {
         id: {
+            allowNull: false,
             field: 'UserId',
-            allowNull: false,
+            primaryKey: true,
             type: Sequelize.UUID,
-            primaryKey: true
-        },
-        username: {
-            field: 'Username',
-            allowNull: false,
-            type: Sequelize.STRING,
         },
         password: {
-            field: 'Password',
             allowNull: false,
+            field: 'Password',
+            type: Sequelize.STRING,
+        },
+        username: {
+            allowNull: false,
+            field: 'Username',
             type: Sequelize.STRING,
         },
     }, {
-            timestamps: false,
             freezeTableName: true,
+            schema: '[User]',
             tableName: '[Credentials]',
-            schema: '[User]'
+            timestamps: false,
         });
 
     return sequelize;
 }
 
-export function validateCredentials(client_id: string, username: string, password: string): Promise<boolean> {
+export function validateCredentials(clientId: string, username: string, password: string): Promise<boolean> {
     const self = this;
     return co(function* () {
 
@@ -57,9 +57,9 @@ export function validateCredentials(client_id: string, username: string, passwor
 
         const userCredentials = yield UserCredentials.find({
             where: {
+                password,
                 username,
-                password
-            }
+            },
         });
 
         if (userCredentials) {

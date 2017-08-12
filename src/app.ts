@@ -28,20 +28,18 @@ app.use(expressWinston.logger({
 }));
 
 const framework = new OAuth2Framework({
-    findClient: (client_id: string) => {
-        if (client_id === '0zyrWYATtw') {
+    findClient: (clientId: string) => {
+        if (clientId === '0zyrWYATtw') {
             return Promise.resolve(new Client('0zyrWYATtw', 'x3h8CTB2Cj', [], ['http://localhost:5766/User/Callback', 'http://epons.sadfm.co.za/User/Callback']));
         } else {
             return Promise.resolve(null);
         }
     },
-    validateCredentials: validateCredentials,
+    validateCredentials,
 });
 
 app.use('/', OAuth2FrameworkRouter(framework, path.join(__dirname, 'login.handlebars')));
 
 app.listen(argv.port || 3000, () => {
-    console.log(`listening on port ${argv.port || 3000}`);
+    logger.info(`listening on port ${argv.port || 3000}`);
 });
-
-
