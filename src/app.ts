@@ -12,7 +12,7 @@ import { logger } from './logger';
 
 import { Client, OAuth2Framework, OAuth2FrameworkRouter } from 'oauth2-framework';
 
-import { validateCredentials } from './db';
+import { resetPassword, sendForgotPasswordEmail, validateCredentials } from './db';
 
 const argv = yargs.argv;
 const app = express();
@@ -32,15 +32,24 @@ app.use(expressWinston.logger({
 const framework = new OAuth2Framework({
     findClient: (clientId: string) => {
         if (clientId === '0zyrWYATtw') {
-            return Promise.resolve(new Client('0zyrWYATtw', 'x3h8CTB2Cj', [], ['http://localhost:5766/User/Callback', 'http://epons.sadfm.co.za/User/Callback']));
+            return Promise.resolve(new Client('EPONS', '0zyrWYATtw', 'x3h8CTB2Cj', [], ['http://localhost:5766/User/Callback', 'http://epons.sadfm.co.za/User/Callback'], true));
         } else {
             return Promise.resolve(null);
         }
     },
+    resetPassword,
+    sendForgotPasswordEmail,
     validateCredentials,
 });
 
-app.use('/', OAuth2FrameworkRouter(framework, path.join(__dirname, 'login.handlebars')));
+app.use('/', OAuth2FrameworkRouter(
+    framework,
+    path.join(__dirname, 'login.handlebars'),
+    null,
+    null,
+    null,
+    null,
+));
 
 app.listen(argv.port || 3000, () => {
     logger.info(`listening on port ${argv.port || 3000}`);
