@@ -2,7 +2,6 @@
 <html>
 
 <head>
-
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -21,13 +20,10 @@
 </head>
 
 <body class="gray-bg">
-
     <div class="loginColumns animated fadeInDown">
         <div class="row">
-
             <div class="col-md-6">
                 <h2 class="font-bold">Welcome to EPONS</h2>
-
                 <p>
                     The South African Database for Functional Medicine (SADFM) is a South African based organization doing developmental research
                     into healthcare outcomes. The SADFM has developed an evidence-based reporting framework to convert patients’
@@ -35,7 +31,6 @@
                     and analysis of this valuable clinical information into a data base which in turn facilitates the design
                     of meaningful reports which measure outcomes, monitor progress and direct care.
                 </p>
-
             </div>
             <div class="col-md-6">
                 <div class="ibox-content">
@@ -62,10 +57,9 @@
                         </div>
                         <p class="text-danger">{{message}}</p>
                         <div class="form-group text-center">
-                            <button type="submit" class="btn btn-primary btn-lg btn-block login-button">Login</button>
-                            {{#if client.allowForgotPassword}}
-                                <a href="/forgot-password?response_type={{query.response_type}}&client_id={{query.client_id}}&redirect_uri={{query.redirect_uri}}&state={{query.state}}">Forgot Password?</a>
-                            {{/if}}
+                            <button type="submit" class="btn btn-primary btn-lg btn-block login-button">Login</button> {{#if
+                            client.allowForgotPassword}}
+                            <a href="/forgot-password?response_type={{query.response_type}}&client_id={{query.client_id}}&redirect_uri={{query.redirect_uri}}&state={{query.state}}">Forgot Password?</a>                            {{/if}}
                         </div>
                     </form>
                     <p class="m-t">

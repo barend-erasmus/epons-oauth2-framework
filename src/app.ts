@@ -44,11 +44,11 @@ const framework = new OAuth2Framework({
 
 app.use('/', OAuth2FrameworkRouter(
     framework,
-    path.join(__dirname, 'login.handlebars'),
-    null,
-    null,
-    null,
-    null,
+    path.join(__dirname, 'views/login.handlebars'),
+    path.join(__dirname, 'views/forgot-password.handlebars'),
+    path.join(__dirname, 'views/forgot-password-success.handlebars'),
+    path.join(__dirname, 'views/forgot-password-failure.handlebars'),
+    path.join(__dirname, 'views/reset-password.handlebars'),
 ));
 
 app.listen(argv.port || 3000, () => {
