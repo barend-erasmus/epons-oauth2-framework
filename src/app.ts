@@ -10,7 +10,7 @@ import * as yargs from 'yargs';
 // Imports logger
 import { logger } from './logger';
 
-import { Client, OAuth2Framework, OAuth2FrameworkRouter } from 'oauth2-framework';
+import { Client, OAuth2FrameworkRouter } from 'oauth2-framework';
 
 import { resetPassword, sendForgotPasswordEmail, validateCredentials } from './db';
 
@@ -29,21 +29,19 @@ app.use(expressWinston.logger({
     winstonInstance: logger,
 }));
 
-const framework = new OAuth2Framework({
-    findClient: (clientId: string) => {
-        if (clientId === '0zyrWYATtw') {
-            return Promise.resolve(new Client('EPONS', '0zyrWYATtw', 'x3h8CTB2Cj', [], ['http://localhost:5766/User/Callback', 'http://epons.sadfm.co.za/User/Callback'], true));
-        } else {
-            return Promise.resolve(null);
-        }
-    },
-    resetPassword,
-    sendForgotPasswordEmail,
-    validateCredentials,
-});
-
 app.use('/', OAuth2FrameworkRouter(
-    framework,
+    {
+        findClient: (clientId: string) => {
+            if (clientId === '0zyrWYATtw') {
+                return Promise.resolve(new Client('EPONS', '0zyrWYATtw', 'x3h8CTB2Cj', [], ['http://localhost:5766/User/Callback', 'http://epons.sadfm.co.za/User/Callback'], true));
+            } else {
+                return Promise.resolve(null);
+            }
+        },
+        resetPassword,
+        sendForgotPasswordEmail,
+        validateCredentials
+    },
     path.join(__dirname, 'views/login.handlebars'),
     path.join(__dirname, 'views/forgot-password.handlebars'),
     path.join(__dirname, 'views/forgot-password-success.handlebars'),

@@ -23,7 +23,7 @@
     "express": "^4.15.4",
     "express-winston": "^2.4.0",
     "moment": "^2.18.1",
-    "oauth2-framework": "^0.2.2",
+    "oauth2-framework": "^0.3.1",
     "sendgrid": "^5.2.1",
     "sequelize": "^4.4.3",
     "tedious": "^2.0.0",
