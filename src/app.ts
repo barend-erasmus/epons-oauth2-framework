@@ -33,7 +33,18 @@ app.use('/', OAuth2FrameworkRouter(
     {
         findClient: (clientId: string) => {
             if (clientId === '0zyrWYATtw') {
-                return Promise.resolve(new Client('EPONS', '0zyrWYATtw', 'x3h8CTB2Cj', [], ['http://localhost:5766/User/Callback', 'http://epons.sadfm.co.za/User/Callback'], true));
+                return Promise.resolve(new Client(
+                    'EPONS',
+                    '0zyrWYATtw',
+                    'x3h8CTB2Cj',
+                    [],
+                    [
+                        'http://localhost:5766/User/Callback',
+                        'http://epons.sadfm.co.za/User/Callback',
+                        'http://live.sadfm.co.za/User/Callback',
+                        'http://localhost:5766/User/Callback'
+                    ],
+                    true));
             } else {
                 return Promise.resolve(null);
             }
