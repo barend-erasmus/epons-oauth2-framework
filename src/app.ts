@@ -41,6 +41,7 @@ app.use('/', OAuth2FrameworkRouter(
                     [
                         'http://localhost:5766/User/Callback',
                         'http://epons.sadfm.co.za/User/Callback',
+                        'http://dev.epons.sadfm.co.za/User/Callback',
                         'http://live.sadfm.co.za/User/Callback',
                         'http://localhost:5766/User/Callback'
                     ],
