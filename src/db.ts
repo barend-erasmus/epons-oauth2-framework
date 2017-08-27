@@ -1,5 +1,4 @@
 // Imports
-import * as co from 'co';
 import * as moment from 'moment';
 import * as Sequelize from 'sequelize';
 
@@ -109,93 +108,85 @@ function sendEmail(toEmailAddress: string, subject: string, html: string): Promi
     });
 }
 
-export function validateCredentials(clientId: string, username: string, password: string): Promise<boolean> {
-    return co(function* () {
+export async function validateCredentials(clientId: string, username: string, password: string): Promise<boolean> {
+    const database = getDatabase();
 
-        const database = getDatabase();
+    await database.authenticate();
 
-        yield database.authenticate();
-
-        const userCredentials = yield UserCredentials.find({
-            where: {
-                locked: false,
-                password,
-                username,
-            },
-        });
-
-        if (userCredentials) {
-
-            userCredentials.lastLoginTimestamp = moment().format('YYYY-MM-DD HH:mm:ss');
-
-            userCredentials.save();
-
-            return true;
-        }
-
-        return false;
+    const userCredentials = await UserCredentials.find({
+        where: {
+            locked: false,
+            password,
+            username,
+        },
     });
+
+    if (userCredentials) {
+
+        userCredentials.lastLoginTimestamp = moment().format('YYYY-MM-DD HH:mm:ss');
+
+        userCredentials.save();
+
+        return true;
+    }
+
+    return false;
 }
 
-export function sendForgotPasswordEmail(clientId: string, username: string, resetPasswordUrl: string) {
-    return co(function* () {
-        const domain = 'https://epons-oauth2-framework.openservices.co.za';
-        // const domain = 'http://localhost:3000';
-        const html = `<div> We heard that you lost your EPONS password. Sorry about that!<br><br>But don’t worry! You can use the following link within the next day to reset your password:<br><br><a href="${domain}${resetPasswordUrl}" target="_blank">Reset Password</a><br><br>If you don’t use this link within 3 hours, it will expire.<br><br>Thanks,<br>Your friends at EPONS <div class="yj6qo"></div><div class="adL"><br></div></div>`;
+export async function sendForgotPasswordEmail(clientId: string, username: string, resetPasswordUrl: string) {
+    const domain = 'https://epons-oauth2-framework.openservices.co.za';
+    // const domain = 'http://localhost:3000';
+    const html = `<div> We heard that you lost your EPONS password. Sorry about that!<br><br>But don’t worry! You can use the following link within the next day to reset your password:<br><br><a href="${domain}${resetPasswordUrl}" target="_blank">Reset Password</a><br><br>If you don’t use this link within 3 hours, it will expire.<br><br>Thanks,<br>Your friends at EPONS <div class="yj6qo"></div><div class="adL"><br></div></div>`;
 
-        const database = getDatabase();
+    const database = getDatabase();
 
-        yield database.authenticate();
+    await database.authenticate();
 
-        const userCredentials = yield UserCredentials.find({
+    const userCredentials = await UserCredentials.find({
+        where: {
+            locked: false,
+            username,
+        },
+    });
+
+    if (userCredentials) {
+        const userDetails = await UserDetails.find({
             where: {
-                locked: false,
-                username,
+                id: userCredentials.id,
             },
         });
 
-        if (userCredentials) {
-            const userDetails = yield UserDetails.find({
-                where: {
-                    id: userCredentials.id,
-                },
-            });
-
-            if (userDetails) {
-                yield sendEmail(userDetails.emailAddress, 'EPONS - Forgot Password', html);
-                return true;
-            } else {
-                return false;
-            }
+        if (userDetails) {
+            await sendEmail(userDetails.emailAddress, 'EPONS - Forgot Password', html);
+            return true;
         } else {
             return false;
         }
-    });
+    } else {
+        return false;
+    }
 }
 
-export function resetPassword(clientId: string, username: string, password: string): Promise<boolean> {
-    return co(function* () {
+export async function resetPassword(clientId: string, username: string, password: string): Promise<boolean> {
+    const database = getDatabase();
 
-        const database = getDatabase();
+    await database.authenticate();
 
-        yield database.authenticate();
-
-        const userCredentials = yield UserCredentials.find({
-            where: {
-                locked: false,
-                username,
-            },
-        });
-
-        if (userCredentials) {
-
-            userCredentials.password = password;
-
-            userCredentials.save();
-
-            return true;
-        }
-
-        return false;
+    const userCredentials = await UserCredentials.find({
+        where: {
+            locked: false,
+            username,
+        },
     });
+
+    if (userCredentials) {
+
+        userCredentials.password = password;
+
+        userCredentials.save();
+
+        return true;
+    }
+
+    return false;
 }
