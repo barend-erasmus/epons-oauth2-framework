@@ -61,6 +61,6 @@ app.use('/', OAuth2FrameworkRouter(
     path.join(__dirname, 'views/reset-password.handlebars'),
 ));
 
-app.listen(argv.port || 3000, () => {
-    logger.info(`listening on port ${argv.port || 3000}`);
+app.listen(argv.port || process.env.PORT || 3000, () => {
+    logger.info(`listening on port ${argv.port || process.env.PORT || 3000}`);
 });
