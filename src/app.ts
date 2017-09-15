@@ -12,7 +12,7 @@ import { logger } from './logger';
 
 import { Client, OAuth2FrameworkRouter } from 'oauth2-framework';
 
-import { resetPassword, sendForgotPasswordEmail, validateCredentials } from './db';
+import { generateAccessToken, generateCode, resetPassword, sendForgotPasswordEmail, validateAccessToken, validateCode, validateCredentials } from './db';
 
 const argv = yargs.argv;
 const app = express();
@@ -31,7 +31,8 @@ app.use(expressWinston.logger({
 
 app.use('/', OAuth2FrameworkRouter(
     {
-        findClient: (clientId: string) => {
+        findClient: (clientId: string, request: express.Request) => {
+
             if (clientId === '0zyrWYATtw') {
                 return Promise.resolve(new Client(
                     'EPONS',
@@ -43,22 +44,35 @@ app.use('/', OAuth2FrameworkRouter(
                         'http://epons.sadfm.co.za/User/Callback',
                         'http://dev.epons.sadfm.co.za/User/Callback',
                         'http://live.sadfm.co.za/User/Callback',
-                        'http://localhost:5766/User/Callback'
+                        'http://localhost:5766/User/Callback',
                     ],
-                    true));
+                    true, false));
             } else {
                 return Promise.resolve(null);
             }
         },
+        register: null,
         resetPassword,
         sendForgotPasswordEmail,
-        validateCredentials
+        sendVerificationEmail: null,
+        validateCredentials,
+        verify: null,
+        generateCode,
+        validateCode,
+        generateAccessToken,
+        validateAccessToken,
     },
     path.join(__dirname, 'views/login.handlebars'),
     path.join(__dirname, 'views/forgot-password.handlebars'),
     path.join(__dirname, 'views/forgot-password-success.handlebars'),
     path.join(__dirname, 'views/forgot-password-failure.handlebars'),
     path.join(__dirname, 'views/reset-password.handlebars'),
+    null,
+    null,
+    null,
+    null,
+    null,
+    'YwlAHD6mi4',
 ));
 
 app.listen(argv.port || process.env.PORT || 3000, () => {

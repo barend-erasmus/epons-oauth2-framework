@@ -1,13 +1,20 @@
 // Imports
+import * as express from 'express';
 import * as moment from 'moment';
 import * as Sequelize from 'sequelize';
+import * as uuid from 'uuid';
 
 import * as crypto from 'crypto';
 import * as sendgrid from 'sendgrid';
 
+import * as jsonwebtoken from 'jsonwebtoken';
+
+import { Token as OAuth2FrameworkToken } from 'oauth2-framework';
+
 let sequelize: Sequelize.Sequelize = null;
 let UserDetails = null;
 let UserCredentials = null;
+let AuthEvent = null;
 
 function getDatabase(): Sequelize.Sequelize {
 
@@ -77,6 +84,40 @@ function getDatabase(): Sequelize.Sequelize {
             timestamps: false,
         });
 
+    AuthEvent = sequelize.define('AuthEvent', {
+        extraDetails: {
+            allowNull: true,
+            field: 'ExtraDetails',
+            type: Sequelize.BOOLEAN,
+        },
+        id: {
+            allowNull: false,
+            field: 'AuthEventId',
+            primaryKey: true,
+            type: Sequelize.UUID,
+        },
+        timestamp: {
+            allowNull: false,
+            field: 'Timestamp',
+            type: Sequelize.STRING,
+        },
+        type: {
+            allowNull: false,
+            field: 'Type',
+            type: Sequelize.STRING,
+        },
+        username: {
+            allowNull: false,
+            field: 'Username',
+            type: Sequelize.STRING,
+        },
+    }, {
+            freezeTableName: true,
+            schema: '[User]',
+            tableName: '[AuthEvent]',
+            timestamps: false,
+        });
+
     return sequelize;
 }
 
@@ -108,7 +149,7 @@ function sendEmail(toEmailAddress: string, subject: string, html: string): Promi
     });
 }
 
-export async function validateCredentials(clientId: string, username: string, password: string): Promise<boolean> {
+export async function validateCredentials(clientId: string, username: string, password: string, request: express.Request): Promise<boolean> {
     const database = getDatabase();
 
     await database.authenticate();
@@ -127,13 +168,21 @@ export async function validateCredentials(clientId: string, username: string, pa
 
         userCredentials.save();
 
+        await AuthEvent.create({
+            extraDetails: null,
+            id: uuid.v4(),
+            timestamp: moment().format('YYYY-MM-DD HH:mm:ss'),
+            type: 'validateCredentials',
+            username,
+        });
+
         return true;
     }
 
     return false;
 }
 
-export async function sendForgotPasswordEmail(clientId: string, username: string, resetPasswordUrl: string) {
+export async function sendForgotPasswordEmail(clientId: string, username: string, resetPasswordUrl: string, request: express.Request) {
     const domain = 'https://epons-oauth2-framework.openservices.co.za';
     // const domain = 'http://localhost:3000';
     const html = `<div> We heard that you lost your EPONS password. Sorry about that!<br><br>But don’t worry! You can use the following link within the next day to reset your password:<br><br><a href="${domain}${resetPasswordUrl}" target="_blank">Reset Password</a><br><br>If you don’t use this link within 3 hours, it will expire.<br><br>Thanks,<br>Your friends at EPONS <div class="yj6qo"></div><div class="adL"><br></div></div>`;
@@ -158,6 +207,15 @@ export async function sendForgotPasswordEmail(clientId: string, username: string
 
         if (userDetails) {
             await sendEmail(userDetails.emailAddress, 'EPONS - Forgot Password', html);
+
+            await AuthEvent.create({
+                extraDetails: null,
+                id: uuid.v4(),
+                timestamp: moment().format('YYYY-MM-DD HH:mm:ss'),
+                type: 'sendForgotPasswordEmail',
+                username,
+            });
+
             return true;
         } else {
             return false;
@@ -167,7 +225,7 @@ export async function sendForgotPasswordEmail(clientId: string, username: string
     }
 }
 
-export async function resetPassword(clientId: string, username: string, password: string): Promise<boolean> {
+export async function resetPassword(clientId: string, username: string, password: string, request: express.Request): Promise<boolean> {
     const database = getDatabase();
 
     await database.authenticate();
@@ -185,8 +243,101 @@ export async function resetPassword(clientId: string, username: string, password
 
         userCredentials.save();
 
+        await AuthEvent.create({
+            extraDetails: null,
+            id: uuid.v4(),
+            timestamp: moment().format('YYYY-MM-DD HH:mm:ss'),
+            type: 'resetPassword',
+            username,
+        });
+
         return true;
     }
 
     return false;
+}
+
+export async function generateCode(clientId: string, username: string, scopes: string[], request: express.Request): Promise<string> {
+
+    const code: string = jsonwebtoken.sign({
+        clientId,
+        scopes,
+        type: 'code',
+        username,
+    }, 'xtnowfPid3', {
+            expiresIn: '10m',
+        });
+
+    await AuthEvent.create({
+        extraDetails: code,
+        id: uuid.v4(),
+        timestamp: moment().format('YYYY-MM-DD HH:mm:ss'),
+        type: 'generateCode',
+        username,
+    });
+
+    return code;
+}
+
+export async function validateCode(code: string, request: express.Request): Promise<OAuth2FrameworkToken> {
+    const token: any = await decodeJWT(code);
+
+    if (!token) {
+        return null;
+    }
+
+    if (token.type !== 'code') {
+        return null;
+    }
+
+    return new OAuth2FrameworkToken(token.clientId, token.username, token.scopes);
+}
+
+export async function generateAccessToken(clientId: string, username: string, scopes: string[], request: express.Request): Promise<string> {
+    const accessToken = jsonwebtoken.sign({
+        clientId,
+        scopes,
+        type: 'access-token',
+        username,
+    }, 'xtnowfPid3', {
+            expiresIn: '60m',
+        });
+
+    await AuthEvent.create({
+        extraDetails: accessToken,
+        id: uuid.v4(),
+        timestamp: moment().format('YYYY-MM-DD HH:mm:ss'),
+        type: 'generateAccessToken',
+        username,
+    });
+
+    return accessToken;
+}
+
+export async function validateAccessToken(accessToken: string, request: express.Request): Promise<OAuth2FrameworkToken> {
+    const token: any = await decodeJWT(accessToken);
+
+    if (!token) {
+        return null;
+    }
+
+    if (token.type !== 'access-token') {
+        return null;
+    }
+
+    return new OAuth2FrameworkToken(token.clientId, token.username, token.scopes);
+}
+
+function decodeJWT(jwt: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+        jsonwebtoken.verify(jwt, 'xtnowfPid3', (err: Error, decodedCode: any) => {
+
+            if (err) {
+                resolve(null);
+                return;
+            }
+
+            resolve(decodedCode);
+        });
+    });
 }
