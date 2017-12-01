@@ -183,7 +183,7 @@ export async function validateCredentials(clientId: string, username: string, pa
 }
 
 export async function sendForgotPasswordEmail(clientId: string, username: string, resetPasswordUrl: string, request: express.Request) {
-    const domain = 'https://epons-oauth2-framework.openservices.co.za';
+    const domain = 'http://secure.epons.sadfm.co.za';
     // const domain = 'http://localhost:3000';
     const html = `<div> We heard that you lost your EPONS password. Sorry about that!<br><br>But don’t worry! You can use the following link within the next day to reset your password:<br><br><a href="${domain}${resetPasswordUrl}" target="_blank">Reset Password</a><br><br>If you don’t use this link within 3 hours, it will expire.<br><br>Thanks,<br>Your friends at EPONS <div class="yj6qo"></div><div class="adL"><br></div></div>`;
 
