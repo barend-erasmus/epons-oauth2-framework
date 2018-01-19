@@ -156,13 +156,16 @@ export async function validateCredentials(clientId: string, username: string, pa
 
     const userCredentials = await UserCredentials.find({
         where: {
-            locked: false,
             password,
             username,
         },
     });
 
     if (userCredentials) {
+
+        if (userCredentials.locked) {
+            throw new Error('The subscription of your facility has expired.  Please contact the administrator at your hospital or clinic.');
+        }
 
         userCredentials.lastLoginTimestamp = moment().format('YYYY-MM-DD HH:mm:ss');
 
